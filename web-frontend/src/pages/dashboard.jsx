@@ -17,7 +17,7 @@ import {
 
 import TravelExploreIcon from "@mui/icons-material/TravelExplore";
 
-import IncidentTimeline from "../components/IncidentTimeline";
+import EnterpriseIncidentTimeline from "../components/EnterpriseIncidentTimeline";
 import RunbookForm from "../components/RunbookForm/RunbookForm";
 import RunbookViewer from "../components/RunbookViewer/RunbookViewer";
 import ExecutiveRCACard from "../components/Dashboard/ExecutiveRCACard";
@@ -182,6 +182,10 @@ function Dashboard() {
       <DashboardHeader />
 
       <DashboardStatsCards stats={stats} loading={loading} />
+
+      <Box sx={{ mt: 3 }}>
+        <EnterpriseIncidentTimeline />
+      </Box>
 
       <Grid container spacing={3} sx={{ mt: 1 }}>
         <Grid item xs={12} md={5}>
