@@ -17,6 +17,7 @@ import {
 
 import TravelExploreIcon from "@mui/icons-material/TravelExplore";
 
+import IncidentTimeline from "../components/IncidentTimeline";
 import RunbookForm from "../components/RunbookForm/RunbookForm";
 import RunbookViewer from "../components/RunbookViewer/RunbookViewer";
 import ExecutiveRCACard from "../components/Dashboard/ExecutiveRCACard";

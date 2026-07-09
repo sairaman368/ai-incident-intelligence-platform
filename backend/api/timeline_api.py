@@ -1,96 +1,80 @@
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from typing import List
+from fastapi import APIRouter
+from database.database import get_connection
+
+router = APIRouter(prefix="/timeline", tags=["Incident Timeline"])
 
 
-router = APIRouter(
-    prefix="/timeline",
-    tags=["Incident Timeline"]
-)
+@router.get("/latest")
+def get_latest_incident_timeline():
+    """
+    Builds an executive incident timeline from the latest saved incident.
+    """
 
+    conn = get_connection()
+    cursor = conn.cursor()
 
-class TimelineRequest(BaseModel):
-    incident_title: str
-    commands: str
-    runbook: str
-    severity: str | None = None
-    root_cause: str | None = None
-    mttr: str | None = None
+    cursor.execute(
+        """
+        SELECT id, incident_title, commands, runbook, created_at
+        FROM incidents
+        ORDER BY id DESC
+        LIMIT 1
+        """
+    )
 
+    incident = cursor.fetchone()
+    conn.close()
 
-class TimelineEvent(BaseModel):
-    time: str
-    stage: str
-    event: str
-    status: str
-
-
-class TimelineResponse(BaseModel):
-    success: bool
-    incident_title: str
-    timeline: List[TimelineEvent]
-
-
-@router.post("/generate", response_model=TimelineResponse)
-def generate_timeline(request: TimelineRequest):
-    try:
-        severity = request.severity or "Unknown"
-        root_cause = request.root_cause or "Root cause analysis pending"
-        mttr = request.mttr or "30 minutes"
-
-        timeline = [
-            {
-                "time": "T+00 min",
-                "stage": "Detection",
-                "event": f"Incident detected: {request.incident_title}",
-                "status": "Detected"
-            },
-            {
-                "time": "T+03 min",
-                "stage": "Classification",
-                "event": f"Incident severity classified as {severity}",
-                "status": "Assessed"
-            },
-            {
-                "time": "T+07 min",
-                "stage": "Diagnostics",
-                "event": "Diagnostic commands executed and system health reviewed",
-                "status": "Investigated"
-            },
-            {
-                "time": "T+12 min",
-                "stage": "Root Cause",
-                "event": root_cause,
-                "status": "Analyzed"
-            },
-            {
-                "time": "T+18 min",
-                "stage": "Remediation",
-                "event": "Immediate corrective actions identified from generated runbook",
-                "status": "Actioned"
-            },
-            {
-                "time": "T+25 min",
-                "stage": "Validation",
-                "event": "Service health, logs, and recovery signals validated",
-                "status": "Validated"
-            },
-            {
-                "time": f"MTTR {mttr}",
-                "stage": "Closure",
-                "event": "Incident timeline completed and ready for executive review",
-                "status": "Completed"
-            }
-        ]
-
+    if not incident:
         return {
             "success": True,
-            "incident_title": request.incident_title,
-            "timeline": timeline
+            "message": "No incidents found",
+            "data": []
         }
 
-    except Exception as ex:
-        raise HTTPException(
-            status_code=500,
-            detail=str(ex)
-        )
+    incident_id, title, commands, runbook, created_at = incident
+
+    timeline = [
+        {
+            "stage": "Incident Detected",
+            "status": "completed",
+            "time": created_at,
+            "summary": f"Incident reported: {title}",
+            "details": "Platform received the incident title and operational command evidence."
+        },
+        {
+            "stage": "Evidence Collected",
+            "status": "completed",
+            "time": created_at,
+            "summary": "Diagnostic commands captured",
+            "details": commands or "No command output was provided."
+        },
+        {
+            "stage": "AI RCA Generated",
+            "status": "completed",
+            "time": created_at,
+            "summary": "Executive root cause analysis generated",
+            "details": "AI engine analyzed the incident evidence and generated RCA output."
+        },
+        {
+            "stage": "Runbook Created",
+            "status": "completed",
+            "time": created_at,
+            "summary": "Resolution runbook prepared",
+            "details": "Recovery, validation, rollback, and preventive actions were generated."
+        },
+        {
+            "stage": "Executive Review",
+            "status": "active",
+            "time": created_at,
+            "summary": "Incident ready for leadership review",
+            "details": "Timeline, RCA, runbook, and AI activity are available for review."
+        }
+    ]
+
+    return {
+        "success": True,
+        "incident_id": incident_id,
+        "incident_title": title,
+        "data": timeline
+    }
