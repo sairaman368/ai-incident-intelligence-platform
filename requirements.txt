@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+streamlit
+requests
+ollama
+sqlalchemy
+reportlab
+python-dotenv
+pydantic
+langchain
+langchain-community
+langchain-ollama
+chromadb
+sentence-transformers
+pandas
