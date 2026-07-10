@@ -4,6 +4,11 @@ backend/venv/
 __pycache__/
 *.pyc
 *.pyo
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+backend/**/__pycache__/
 
 # Node
 node_modules/
