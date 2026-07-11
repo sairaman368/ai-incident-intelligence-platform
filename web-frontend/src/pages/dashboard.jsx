@@ -1,48 +1,45 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import {
-  Typography,
-  Grid,
+  Alert,
   Box,
-  CircularProgress,
-  Paper,
-  Stack,
-  Chip,
   Divider,
-  List,
-  ListItem,
-  ListItemText,
-  LinearProgress
+  Grid,
+  Paper,
+  Typography
 } from "@mui/material";
 
-import TravelExploreIcon from "@mui/icons-material/TravelExplore";
-
-import EnterpriseIncidentTimeline from "../components/EnterpriseIncidentTimeline";
+import PlatformHealth from "../components/PlatformHealth";
+import EnterpriseIncidentTimeline from "../components/enterpriseincidenttimeline";
+import SimilarIncidentIntelligence from "../components/similarincidentintelligence";
+import AICopilot from "../components/aicopilot";
 import RunbookForm from "../components/RunbookForm/RunbookForm";
 import RunbookViewer from "../components/RunbookViewer/RunbookViewer";
 import ExecutiveRCACard from "../components/Dashboard/ExecutiveRCACard";
 import DashboardHeader from "../components/Dashboard/DashboardHeader";
-import DashboardStatsCards from "../components/Dashboard/DashboardStatsCards";
 import RecentAIActivity from "../components/Dashboard/RecentAIActivity";
 import AIEngineStatus from "../components/Dashboard/AIEngineStatus";
 
-import { getDashboardStatistics } from "../services/dashboardApi";
 import { getSimilarIncidents } from "../services/similarApi";
 import { analyzeRCA } from "../services/rcaApi";
 
 const panelStyle = {
   borderRadius: 4,
-  boxShadow: "0 14px 35px rgba(15,23,42,0.08)",
   border: "1px solid #e5e7eb",
-  background: "#ffffff"
+  background: "#ffffff",
+  boxShadow: "0 14px 35px rgba(15,23,42,0.08)"
 };
 
 const readValue = (source, keys, fallback = "N/A") => {
-  if (!source || typeof source !== "object") return fallback;
+  if (!source || typeof source !== "object") {
+    return fallback;
+  }
 
   for (const key of keys) {
-    if (source[key] !== undefined && source[key] !== null && source[key] !== "") {
-      return source[key];
+    const value = source[key];
+
+    if (value !== undefined && value !== null && value !== "") {
+      return value;
     }
   }
 
@@ -50,74 +47,93 @@ const readValue = (source, keys, fallback = "N/A") => {
 };
 
 const normalizeRCA = (result) => {
-  const source = result?.data && typeof result.data === "object" ? result.data : result;
+  const source =
+    result?.data && typeof result.data === "object"
+      ? result.data
+      : result;
 
   return {
     severity: readValue(source, ["severity", "Severity"]),
-    confidence: readValue(source, ["confidence_score", "confidence", "Confidence Score", "confidenceScore"]),
-    mttr: readValue(source, ["mttr", "MTTR", "estimated_mttr"]),
-    rootCause: readValue(source, ["root_cause", "Root Cause", "rootCause", "most_probable_root_cause"]),
-    executiveSummary: readValue(source, ["executive_summary", "Executive Summary", "executiveSummary", "summary"])
+    confidence: readValue(source, [
+      "confidence_score",
+      "confidence",
+      "Confidence Score",
+      "confidenceScore"
+    ]),
+    mttr: readValue(source, [
+      "mttr",
+      "MTTR",
+      "estimated_mttr"
+    ]),
+    rootCause: readValue(source, [
+      "root_cause",
+      "Root Cause",
+      "rootCause",
+      "most_probable_root_cause"
+    ]),
+    executiveSummary: readValue(source, [
+      "executive_summary",
+      "Executive Summary",
+      "executiveSummary",
+      "summary"
+    ])
   };
 };
 
 function Dashboard() {
   const [runbook, setRunbook] = useState("");
   const [incidentTitle, setIncidentTitle] = useState("");
+  const [incidentDescription, setIncidentDescription] = useState("");
   const [similarIncidents, setSimilarIncidents] = useState([]);
   const [executiveRCA, setExecutiveRCA] = useState(null);
-  const [rcaLoading, setRcaLoading] = useState(false);
-  const [rcaError, setRcaError] = useState("");
 
-  const [stats, setStats] = useState({
-    total_runbooks: 0,
-    ai_generated: 0,
-    todays_runbooks: 0,
-    database_status: "Loading..."
-  });
-
-  const [loading, setLoading] = useState(true);
   const [similarLoading, setSimilarLoading] = useState(false);
+  const [rcaLoading, setRcaLoading] = useState(false);
+
+  const [rcaError, setRcaError] = useState("");
+  const [dashboardError, setDashboardError] = useState("");
+
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    loadStatistics();
-
     const savedRCA = localStorage.getItem("latestExecutiveRCA");
-    if (savedRCA) {
-      try {
-        setExecutiveRCA(JSON.parse(savedRCA));
-      } catch (error) {
-        console.error(error);
-        localStorage.removeItem("latestExecutiveRCA");
-      }
+
+    if (!savedRCA) {
+      return;
+    }
+
+    try {
+      setExecutiveRCA(JSON.parse(savedRCA));
+    } catch (error) {
+      console.error("Unable to restore Executive RCA:", error);
+      localStorage.removeItem("latestExecutiveRCA");
     }
   }, []);
-
-  const loadStatistics = async () => {
-    try {
-      const data = await getDashboardStatistics();
-      setStats(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const loadSimilarIncidents = async (title) => {
     try {
       setSimilarLoading(true);
-      const data = await getSimilarIncidents(title);
-      setSimilarIncidents(data);
-    } catch (err) {
-      console.error(err);
+
+      const response = await getSimilarIncidents(title);
+
+      const incidents = Array.isArray(response)
+        ? response
+        : response?.data || [];
+
+      setSimilarIncidents(incidents);
+    } catch (error) {
+      console.error("Similar incident lookup failed:", error);
       setSimilarIncidents([]);
     } finally {
       setSimilarLoading(false);
     }
   };
 
-  const loadExecutiveRCA = async ({ title, commands, generatedRunbook }) => {
+  const loadExecutiveRCA = async ({
+    title,
+    commands,
+    generatedRunbook
+  }) => {
     try {
       setRcaLoading(true);
       setRcaError("");
@@ -129,159 +145,130 @@ function Dashboard() {
         runbook: generatedRunbook
       });
 
-      const normalized = normalizeRCA(result);
+      const normalizedRCA = normalizeRCA(result);
 
-      setExecutiveRCA(normalized);
-      localStorage.setItem("latestExecutiveRCA", JSON.stringify(normalized));
+      setExecutiveRCA(normalizedRCA);
+
+      localStorage.setItem(
+        "latestExecutiveRCA",
+        JSON.stringify(normalizedRCA)
+      );
     } catch (error) {
-      console.error(error);
+      console.error("Executive RCA generation failed:", error);
+
       setExecutiveRCA(null);
-      setRcaError("RCA analysis failed. Please confirm the backend /rca/analyze API is running.");
+      setRcaError(
+        "RCA analysis failed. Confirm the backend and Ollama services are running."
+      );
     } finally {
       setRcaLoading(false);
     }
   };
 
   const handleRunbookGenerated = async (payload) => {
-    setRunbook(payload.runbook);
-    setIncidentTitle(payload.incidentTitle);
+    const generatedRunbook = payload?.runbook || "";
 
-    await loadStatistics();
-    await loadSimilarIncidents(payload.incidentTitle);
+    const title =
+      payload?.incidentTitle ||
+      payload?.incident_title ||
+      "Untitled Incident";
 
-    await loadExecutiveRCA({
-      title: payload.incidentTitle,
-      commands: payload.commands,
-      generatedRunbook: payload.runbook
-    });
+    const commands = payload?.commands || "";
+
+    setDashboardError("");
+    setRunbook(generatedRunbook);
+    setIncidentTitle(title);
+    setIncidentDescription(commands);
+
+    try {
+      await Promise.all([
+        loadSimilarIncidents(title),
+        loadExecutiveRCA({
+          title,
+          commands,
+          generatedRunbook
+        })
+      ]);
+    } catch (error) {
+      console.error("Dashboard refresh failed:", error);
+
+      setDashboardError(
+        "The runbook was generated, but one or more dashboard services could not refresh."
+      );
+    } finally {
+      setRefreshKey((currentValue) => currentValue + 1);
+    }
   };
 
   const clearDashboardOutput = () => {
     setRunbook("");
     setIncidentTitle("");
+    setIncidentDescription("");
     setSimilarIncidents([]);
     setExecutiveRCA(null);
     setRcaError("");
+    setDashboardError("");
+
     localStorage.removeItem("latestExecutiveRCA");
-  };
-
-  const getScoreColor = (score) => {
-    if (score >= 70) return "success";
-    if (score >= 45) return "warning";
-    return "default";
-  };
-
-  const getProgressColor = (score) => {
-    if (score >= 70) return "#16a34a";
-    if (score >= 45) return "#f59e0b";
-    return "#64748b";
   };
 
   return (
     <Box>
       <DashboardHeader />
 
-      <DashboardStatsCards stats={stats} loading={loading} />
-
       <Box sx={{ mt: 3 }}>
-        <EnterpriseIncidentTimeline />
+        <PlatformHealth key={`platform-health-${refreshKey}`} />
       </Box>
 
-      <Grid container spacing={3} sx={{ mt: 1 }}>
-        <Grid item xs={12} md={5}>
+      {dashboardError && (
+        <Alert
+          severity="warning"
+          sx={{
+            mt: 3,
+            borderRadius: 3
+          }}
+        >
+          {dashboardError}
+        </Alert>
+      )}
+
+      <Box sx={{ mt: 3 }}>
+        <EnterpriseIncidentTimeline
+          key={`incident-timeline-${refreshKey}`}
+        />
+      </Box>
+
+      <Grid container spacing={3} sx={{ mt: 0 }}>
+        <Grid item xs={12} lg={5}>
           <Paper sx={{ ...panelStyle, p: 3 }}>
-            <Typography variant="h6" sx={{ fontWeight: 900, mb: 1 }}>
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 900,
+                color: "#0f172a",
+                mb: 1
+              }}
+            >
               Generate New Incident Intelligence
             </Typography>
 
-            <Typography variant="body2" sx={{ color: "#64748b", mb: 2 }}>
-              Enter an incident and diagnostic commands to generate AI runbook, RCA, and insights.
+            <Typography
+              variant="body2"
+              sx={{
+                color: "#64748b",
+                mb: 2
+              }}
+            >
+              Enter the incident details and diagnostic commands to
+              generate an AI runbook, executive RCA, and operational
+              insights.
             </Typography>
 
             <Divider sx={{ mb: 2 }} />
 
-            <RunbookForm onRunbookGenerated={handleRunbookGenerated} />
-          </Paper>
-
-          <Paper sx={{ ...panelStyle, p: 3, mt: 3 }}>
-            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
-              <TravelExploreIcon sx={{ color: "#2563eb" }} />
-
-              <Typography variant="h6" sx={{ fontWeight: 900 }}>
-                Similar Incident Intelligence
-              </Typography>
-            </Stack>
-
-            {!incidentTitle && (
-              <Typography variant="body2" sx={{ color: "#64748b" }}>
-                Generate a runbook to see similar historical incidents.
-              </Typography>
-            )}
-
-            {incidentTitle && similarLoading && (
-              <Box display="flex" justifyContent="center" py={3}>
-                <CircularProgress size={26} />
-              </Box>
-            )}
-
-            {incidentTitle && !similarLoading && similarIncidents.length === 0 && (
-              <Typography variant="body2" sx={{ color: "#64748b" }}>
-                No similar incidents found.
-              </Typography>
-            )}
-
-            {incidentTitle && !similarLoading && similarIncidents.length > 0 && (
-              <List disablePadding>
-                {similarIncidents.map((item) => (
-                  <ListItem
-                    key={item.id}
-                    sx={{
-                      border: "1px solid #e5e7eb",
-                      borderRadius: 3,
-                      mb: 1.5,
-                      background: "#f8fafc",
-                      display: "block",
-                      p: 2
-                    }}
-                  >
-                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                      <ListItemText
-                        primary={item.incident}
-                        secondary={item.created_at}
-                        primaryTypographyProps={{
-                          fontWeight: 900,
-                          color: "#0f172a"
-                        }}
-                        secondaryTypographyProps={{
-                          color: "#64748b"
-                        }}
-                      />
-
-                      <Chip
-                        label={`${item.score}% Match`}
-                        color={getScoreColor(item.score)}
-                        variant="outlined"
-                        sx={{ fontWeight: 900 }}
-                      />
-                    </Stack>
-
-                    <LinearProgress
-                      variant="determinate"
-                      value={item.score}
-                      sx={{
-                        height: 8,
-                        borderRadius: 10,
-                        backgroundColor: "#e5e7eb",
-                        "& .MuiLinearProgress-bar": {
-                          borderRadius: 10,
-                          backgroundColor: getProgressColor(item.score)
-                        }
-                      }}
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            )}
+            <RunbookForm
+              onRunbookGenerated={handleRunbookGenerated}
+            />
           </Paper>
 
           <ExecutiveRCACard
@@ -292,14 +279,34 @@ function Dashboard() {
           />
         </Grid>
 
-        <Grid item xs={12} md={7}>
-          <Paper sx={{ ...panelStyle, p: 3, minHeight: 420 }}>
-            <Typography variant="h6" sx={{ fontWeight: 900, mb: 1 }}>
+        <Grid item xs={12} lg={7}>
+          <Paper
+            sx={{
+              ...panelStyle,
+              p: 3,
+              minHeight: 460
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 900,
+                color: "#0f172a",
+                mb: 1
+              }}
+            >
               Generated Runbook
             </Typography>
 
-            <Typography variant="body2" sx={{ color: "#64748b", mb: 2 }}>
-              AI incident intelligence output will appear here after successful generation.
+            <Typography
+              variant="body2"
+              sx={{
+                color: "#64748b",
+                mb: 2
+              }}
+            >
+              AI-generated diagnostic, recovery, validation, rollback,
+              and preventive actions appear here.
             </Typography>
 
             <Divider sx={{ mb: 2 }} />
@@ -317,11 +324,27 @@ function Dashboard() {
             </Grid>
 
             <Grid item xs={12} md={6}>
-              <RecentAIActivity />
+              <RecentAIActivity
+                key={`activity-${refreshKey}`}
+              />
             </Grid>
           </Grid>
         </Grid>
       </Grid>
+<Box sx={{ mt: 3 }}>
+  <AICopilot
+    incidentTitle={incidentTitle}
+    incidentDescription={incidentDescription}
+    runbook={runbook}
+  />
+</Box>
+      <Box sx={{ mt: 3 }}>
+        <SimilarIncidentIntelligence
+          incidentTitle={incidentTitle}
+          loading={similarLoading}
+          incidents={similarIncidents}
+        />
+      </Box>
     </Box>
   );
 }

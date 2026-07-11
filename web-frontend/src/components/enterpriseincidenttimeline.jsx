@@ -40,12 +40,8 @@ export default function EnterpriseIncidentTimeline() {
   };
 
   useEffect(() => {
-    loadTimeline();
-
-    const timer = setInterval(loadTimeline, 10000);
-
-    return () => clearInterval(timer);
-  }, []);
+  loadTimeline();
+}, []);
 
   return (
     <Card className="timeline-card">

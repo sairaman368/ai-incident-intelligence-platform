@@ -1,11 +1,17 @@
 import React, { useState } from "react";
 
 import {
-  Box,
-  Collapse,
-  IconButton,
-  Tooltip
+    Box,
+    Collapse,
+    IconButton,
+    Stack,
+    Tooltip,
+    Typography,
+    Divider
 } from "@mui/material";
+
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
 import ReportProblemOutlinedIcon from "@mui/icons-material/ReportProblemOutlined";
 import TerminalOutlinedIcon from "@mui/icons-material/TerminalOutlined";
@@ -13,133 +19,207 @@ import SmartToyOutlinedIcon from "@mui/icons-material/SmartToyOutlined";
 import PsychologyAltOutlinedIcon from "@mui/icons-material/PsychologyAltOutlined";
 import MenuBookOutlinedIcon from "@mui/icons-material/MenuBookOutlined";
 import SupervisorAccountOutlinedIcon from "@mui/icons-material/SupervisorAccountOutlined";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
-const stageIcon = (stage) => {
-  const value = stage.toLowerCase();
+import TimelineStatusBadge from "./TimelineStatusBadge";
 
-  if (value.includes("incident"))
-    return <ReportProblemOutlinedIcon fontSize="small" />;
-
-  if (value.includes("evidence"))
-    return <TerminalOutlinedIcon fontSize="small" />;
-
-  if (value.includes("ai"))
-    return <SmartToyOutlinedIcon fontSize="small" />;
-
-  if (value.includes("root"))
-    return <PsychologyAltOutlinedIcon fontSize="small" />;
-
-  if (value.includes("runbook"))
-    return <MenuBookOutlinedIcon fontSize="small" />;
-
-  return <SupervisorAccountOutlinedIcon fontSize="small" />;
+const ICONS = {
+    report_problem: ReportProblemOutlinedIcon,
+    terminal: TerminalOutlinedIcon,
+    smart_toy: SmartToyOutlinedIcon,
+    psychology: PsychologyAltOutlinedIcon,
+    menu_book: MenuBookOutlinedIcon,
+    supervisor_account: SupervisorAccountOutlinedIcon
 };
 
-function getChipClass(status) {
-  if (!status) return "pending";
+export default function TimelineEvent({ event }) {
 
-  const s = status.toLowerCase();
+    const [expanded, setExpanded] = useState(false);
 
-  if (s === "completed") return "completed";
-  if (s === "active") return "active";
-  if (s === "failed") return "failed";
+    const Icon =
+        ICONS[event.icon] ||
+        SupervisorAccountOutlinedIcon;
 
-  return "pending";
-}
+    return (
 
-function formatTime(dateValue) {
-  if (!dateValue) return "--:--";
+        <div className="timeline-row">
 
-  const d = new Date(dateValue);
+            <div className="timeline-time">
 
-  if (Number.isNaN(d.getTime())) return "--:--";
+                <div className="timeline-time-value">
 
-  return d.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+                    {event.timestamp}
 
-export default function TimelineEvent({ event, index }) {
-  const [expanded, setExpanded] = useState(index === 0);
+                </div>
 
-  const chipClass = getChipClass(event.status);
+                <div className="timeline-duration">
 
-  return (
-    <div className="timeline-row">
+                    {event.duration}
 
-      <div className="timeline-time">
-        <div className="timeline-time-value">
-          {formatTime(event.event_time)}
-        </div>
+                </div>
 
-        <div className="timeline-duration">
-          Step {index + 1}
-        </div>
-      </div>
-
-      <div className="timeline-node-wrapper">
-        <div className={`timeline-node ${chipClass}`} />
-      </div>
-
-      <div className="timeline-content">
-
-        <div className="timeline-top">
-
-          <div className="timeline-stage">
-
-            {stageIcon(event.stage)}
-
-            <div className="timeline-stage-name">
-              {event.stage}
             </div>
 
-          </div>
+            <div className="timeline-node-wrapper">
 
-          <Box display="flex" alignItems="center" gap={1}>
+                <div className={`timeline-node ${event.status}`} />
 
-            <div className={`timeline-chip ${chipClass}`}>
-              {event.status}
             </div>
 
-            <Tooltip title={expanded ? "Collapse" : "Expand"}>
+            <div className="timeline-content">
 
-              <IconButton
-                size="small"
-                onClick={() => setExpanded(!expanded)}
-                sx={{
-                  color: "#ffffff"
-                }}
-              >
-                {expanded ? (
-                  <ExpandLessIcon />
-                ) : (
-                  <ExpandMoreIcon />
-                )}
-              </IconButton>
+                <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="center"
+                >
 
-            </Tooltip>
+                    <Stack
+                        direction="row"
+                        spacing={1.5}
+                        alignItems="center"
+                    >
 
-          </Box>
+                        <Icon
+                            sx={{
+                                color: "#60A5FA"
+                            }}
+                        />
+
+                        <Typography
+                            className="timeline-stage-name"
+                        >
+                            {event.stage}
+                        </Typography>
+
+                    </Stack>
+
+                    <Stack
+                        direction="row"
+                        alignItems="center"
+                    >
+
+                        <TimelineStatusBadge
+                            status={event.status}
+                            severity={event.severity}
+                            confidence={event.confidence}
+                        />
+
+                        <Tooltip
+                            title={
+                                expanded
+                                    ? "Collapse"
+                                    : "Expand"
+                            }
+                        >
+
+                            <IconButton
+                                sx={{
+                                    ml: 1,
+                                    color: "#fff"
+                                }}
+                                onClick={() =>
+                                    setExpanded(!expanded)
+                                }
+                            >
+
+                                {expanded
+                                    ? <ExpandLessIcon />
+                                    : <ExpandMoreIcon />}
+
+                            </IconButton>
+
+                        </Tooltip>
+
+                    </Stack>
+
+                </Stack>
+
+                <Typography
+                    className="timeline-summary"
+                >
+
+                    {event.summary}
+
+                </Typography>
+
+                <Collapse
+                    in={expanded}
+                >
+
+                    <Divider
+                        sx={{
+                            my: 2,
+                            borderColor:
+                                "rgba(255,255,255,.08)"
+                        }}
+                    />
+
+                    <Box
+                        className="timeline-details"
+                    >
+
+                        <Typography
+                            fontWeight={700}
+                            mb={1}
+                        >
+                            Details
+                        </Typography>
+
+                        <Typography
+                            sx={{
+                                whiteSpace: "pre-wrap"
+                            }}
+                        >
+                            {event.details}
+                        </Typography>
+
+                        <Divider
+                            sx={{
+                                my: 2,
+                                borderColor:
+                                    "rgba(255,255,255,.08)"
+                            }}
+                        />
+
+                        <Typography
+                            fontWeight={700}
+                            mb={1}
+                        >
+                            Metadata
+                        </Typography>
+
+                        <Typography>
+
+                            Engine :
+                            {" "}
+                            {event.metadata.engine}
+
+                        </Typography>
+
+                        <Typography>
+
+                            Model :
+                            {" "}
+                            {event.metadata.model}
+
+                        </Typography>
+
+                        <Typography>
+
+                            Source :
+                            {" "}
+                            {event.metadata.source}
+
+                        </Typography>
+
+                    </Box>
+
+                </Collapse>
+
+            </div>
 
         </div>
 
-        <div className="timeline-summary">
-          {event.summary}
-        </div>
+    );
 
-        <Collapse in={expanded} timeout={250}>
-
-          <div className="timeline-details">
-            {event.details || "No additional information available."}
-          </div>
-
-        </Collapse>
-
-      </div>
-
-    </div>
-  );
 }

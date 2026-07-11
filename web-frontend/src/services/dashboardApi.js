@@ -1,6 +1,11 @@
-import api from "./api";
+import axios from "axios";
 
-export const getDashboardStatistics = async () => {
-  const response = await api.get("/dashboard/statistics");
-  return response.data.data;
-};
+const API_BASE_URL = "http://127.0.0.1:8000";
+
+export async function getPlatformHealth() {
+  const response = await axios.get(
+    `${API_BASE_URL}/dashboard/platform-health`
+  );
+
+  return response.data;
+}
