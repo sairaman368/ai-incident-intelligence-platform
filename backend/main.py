@@ -8,6 +8,7 @@ from api.analytics_api import router as analytics_router
 from api.timeline_api import router as timeline_router
 from api.dashboard_api import router as dashboard_router
 from api.copilot_api import router as copilot_router
+from api.risk_api import router as risk_router
 from api.rca_api import router as rca_router
 from api.similar_api import router as similar_router
 
@@ -35,6 +36,7 @@ app.include_router(analytics_router)
 app.include_router(timeline_router)
 app.include_router(dashboard_router)
 app.include_router(copilot_router)
+app.include_router(risk_router)
 app.include_router(rca_router)
 app.include_router(similar_router)
 

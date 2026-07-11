@@ -4,9 +4,6 @@ import {
   Alert,
   Box,
   Button,
-  Card,
-  CardContent,
-  Chip,
   CircularProgress,
   Divider,
   Stack,
@@ -17,6 +14,10 @@ import {
 import SmartToyOutlinedIcon from "@mui/icons-material/SmartToyOutlined";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
 import RestartAltRoundedIcon from "@mui/icons-material/RestartAltRounded";
+
+import DashboardCard from "./common/dashboardcard";
+import SectionHeader from "./common/sectionheader";
+import StatusChip from "./common/statuschip";
 
 import { askCopilot } from "../services/copilotapi";
 
@@ -76,11 +77,10 @@ export default function AICopilot({
     } catch (requestError) {
       console.error("AI Copilot request failed:", requestError);
 
-      const message =
+      setError(
         requestError?.response?.data?.detail ||
-        "AI Copilot request failed. Confirm the backend and Ollama are running.";
-
-      setError(message);
+          "AI Copilot request failed. Confirm the backend and Ollama are running."
+      );
     } finally {
       setLoading(false);
     }
@@ -93,223 +93,192 @@ export default function AICopilot({
   };
 
   return (
-    <Card
+    <DashboardCard
+      compact
       sx={{
-        borderRadius: 4,
-        border: "1px solid #e5e7eb",
+        minHeight: 280,
         background:
           "linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)",
         color: "#ffffff",
-        boxShadow: "0 18px 42px rgba(15,23,42,0.18)"
+        borderColor: "rgba(255,255,255,0.08)"
       }}
     >
-      <CardContent sx={{ p: 3 }}>
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          justifyContent="space-between"
-          alignItems={{ xs: "flex-start", sm: "center" }}
-          spacing={2}
-        >
-          <Stack direction="row" spacing={1.2} alignItems="center">
-            <Box
-              sx={{
-                width: 44,
-                height: 44,
-                borderRadius: 3,
-                display: "grid",
-                placeItems: "center",
-                backgroundColor: "rgba(255,255,255,0.12)"
-              }}
-            >
-              <SmartToyOutlinedIcon />
-            </Box>
+      <SectionHeader
+        compact
+        icon={<SmartToyOutlinedIcon fontSize="small" />}
+        title="Executive AI Copilot"
+        subtitle="Ask questions about the current incident, RCA and recovery actions."
+        status={hasIncidentContext ? "Context Ready" : "No Context"}
+        statusColor={hasIncidentContext ? "success" : "warning"}
+      />
 
-            <Box>
-              <Typography variant="h6" sx={{ fontWeight: 900 }}>
-                Executive AI Copilot
-              </Typography>
+      <Divider
+        sx={{
+          mb: 1.5,
+          borderColor: "rgba(255,255,255,0.12)"
+        }}
+      />
 
-              <Typography
-                variant="body2"
-                sx={{ color: "#cbd5e1", mt: 0.3 }}
-              >
-                Ask questions about the current incident, RCA, and
-                recovery actions.
-              </Typography>
-            </Box>
-          </Stack>
-
-          <Chip
-            label={hasIncidentContext ? "Incident Context Ready" : "No Context"}
-            size="small"
+      <Stack
+        direction="row"
+        flexWrap="wrap"
+        gap={0.75}
+        sx={{ mb: 1.5 }}
+      >
+        {suggestedQuestions.map((item) => (
+          <StatusChip
+            key={item}
+            label={item}
+            status="default"
+            compact
             sx={{
-              fontWeight: 800,
-              color: hasIncidentContext ? "#bbf7d0" : "#fde68a",
-              backgroundColor: hasIncidentContext
-                ? "rgba(34,197,94,0.18)"
-                : "rgba(245,158,11,0.18)"
+              color: "#dbeafe",
+              border: "1px solid rgba(147,197,253,0.28)",
+              backgroundColor: "rgba(37,99,235,0.16)",
+              cursor: "pointer",
+              "&:hover": {
+                backgroundColor: "rgba(37,99,235,0.26)"
+              }
+            }}
+            onClick={() => {
+              setQuestion(item);
+              submitQuestion(item);
             }}
           />
-        </Stack>
+        ))}
+      </Stack>
 
-        <Divider
-          sx={{
-            my: 2.5,
-            borderColor: "rgba(255,255,255,0.12)"
-          }}
-        />
+      <TextField
+        fullWidth
+        multiline
+        minRows={2}
+        maxRows={4}
+        value={question}
+        onChange={(event) => setQuestion(event.target.value)}
+        placeholder="Example: What is the safest next action?"
+        disabled={loading}
+        size="small"
+        sx={{
+          "& .MuiOutlinedInput-root": {
+            color: "#ffffff",
+            backgroundColor: "rgba(255,255,255,0.07)",
+            borderRadius: 2,
+            "& fieldset": {
+              borderColor: "rgba(255,255,255,0.18)"
+            },
+            "&:hover fieldset": {
+              borderColor: "rgba(255,255,255,0.32)"
+            },
+            "&.Mui-focused fieldset": {
+              borderColor: "#60a5fa"
+            }
+          },
+          "& textarea::placeholder": {
+            color: "#cbd5e1",
+            opacity: 1
+          }
+        }}
+      />
 
-        <Stack
-          direction="row"
-          flexWrap="wrap"
-          gap={1}
-          sx={{ mb: 2.5 }}
-        >
-          {suggestedQuestions.map((item) => (
-            <Chip
-              key={item}
-              label={item}
-              onClick={() => {
-                setQuestion(item);
-                submitQuestion(item);
-              }}
-              disabled={loading}
-              sx={{
-                color: "#dbeafe",
-                border: "1px solid rgba(147,197,253,0.35)",
-                backgroundColor: "rgba(37,99,235,0.16)",
-                cursor: "pointer",
-                "&:hover": {
-                  backgroundColor: "rgba(37,99,235,0.28)"
-                }
-              }}
-            />
-          ))}
-        </Stack>
-
-        <TextField
-          fullWidth
-          multiline
-          minRows={3}
-          maxRows={6}
-          value={question}
-          onChange={(event) => setQuestion(event.target.value)}
-          placeholder="Example: What is the safest next action for this incident?"
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        justifyContent="flex-end"
+        spacing={1}
+        sx={{ mt: 1.5 }}
+      >
+        <Button
+          variant="outlined"
+          size="small"
+          startIcon={<RestartAltRoundedIcon />}
+          onClick={clearCopilot}
           disabled={loading}
           sx={{
-            "& .MuiOutlinedInput-root": {
-              color: "#ffffff",
-              backgroundColor: "rgba(255,255,255,0.08)",
-              borderRadius: 3,
-              "& fieldset": {
-                borderColor: "rgba(255,255,255,0.18)"
-              },
-              "&:hover fieldset": {
-                borderColor: "rgba(255,255,255,0.32)"
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: "#60a5fa"
-              }
-            },
-            "& textarea::placeholder": {
-              color: "#cbd5e1",
-              opacity: 1
+            color: "#ffffff",
+            borderColor: "rgba(255,255,255,0.25)",
+            textTransform: "none",
+            fontWeight: 800,
+            "&:hover": {
+              borderColor: "#ffffff",
+              backgroundColor: "rgba(255,255,255,0.06)"
             }
           }}
-        />
-
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          justifyContent="flex-end"
-          spacing={1.5}
-          sx={{ mt: 2 }}
         >
-          <Button
-            variant="outlined"
-            startIcon={<RestartAltRoundedIcon />}
-            onClick={clearCopilot}
-            disabled={loading}
-            sx={{
-              color: "#ffffff",
-              borderColor: "rgba(255,255,255,0.28)",
-              "&:hover": {
-                borderColor: "#ffffff",
-                backgroundColor: "rgba(255,255,255,0.06)"
-              }
-            }}
-          >
-            Clear
-          </Button>
+          Clear
+        </Button>
 
-          <Button
-            variant="contained"
-            startIcon={
-              loading ? (
-                <CircularProgress size={18} color="inherit" />
-              ) : (
-                <SendRoundedIcon />
-              )
+        <Button
+          variant="contained"
+          size="small"
+          startIcon={
+            loading ? (
+              <CircularProgress size={16} color="inherit" />
+            ) : (
+              <SendRoundedIcon />
+            )
+          }
+          onClick={() => submitQuestion()}
+          disabled={loading || !question.trim()}
+          sx={{
+            textTransform: "none",
+            fontWeight: 800,
+            backgroundColor: "#2563eb",
+            "&:hover": {
+              backgroundColor: "#1d4ed8"
             }
-            onClick={() => submitQuestion()}
-            disabled={loading || !question.trim()}
+          }}
+        >
+          {loading ? "Analysing..." : "Ask Copilot"}
+        </Button>
+      </Stack>
+
+      {error && (
+        <Alert
+          severity="error"
+          sx={{
+            mt: 1.5,
+            py: 0.25,
+            borderRadius: 2
+          }}
+        >
+          {error}
+        </Alert>
+      )}
+
+      {answer && (
+        <Box
+          sx={{
+            mt: 1.5,
+            p: 1.5,
+            borderRadius: 2,
+            backgroundColor: "rgba(255,255,255,0.08)",
+            border: "1px solid rgba(255,255,255,0.12)",
+            maxHeight: 180,
+            overflowY: "auto"
+          }}
+        >
+          <Typography
+            variant="subtitle2"
             sx={{
-              fontWeight: 800,
-              backgroundColor: "#2563eb",
-              "&:hover": {
-                backgroundColor: "#1d4ed8"
-              }
+              fontWeight: 900,
+              color: "#bfdbfe",
+              mb: 0.75
             }}
           >
-            {loading ? "Analysing..." : "Ask Copilot"}
-          </Button>
-        </Stack>
+            Copilot Response
+          </Typography>
 
-        {error && (
-          <Alert
-            severity="error"
+          <Typography
+            variant="body2"
             sx={{
-              mt: 2.5,
-              borderRadius: 3
+              whiteSpace: "pre-wrap",
+              color: "#e2e8f0",
+              lineHeight: 1.55
             }}
           >
-            {error}
-          </Alert>
-        )}
-
-        {answer && (
-          <Box
-            sx={{
-              mt: 2.5,
-              p: 2.5,
-              borderRadius: 3,
-              backgroundColor: "rgba(255,255,255,0.08)",
-              border: "1px solid rgba(255,255,255,0.12)"
-            }}
-          >
-            <Typography
-              variant="subtitle2"
-              sx={{
-                fontWeight: 900,
-                color: "#bfdbfe",
-                mb: 1.2
-              }}
-            >
-              Copilot Response
-            </Typography>
-
-            <Typography
-              variant="body2"
-              sx={{
-                whiteSpace: "pre-wrap",
-                color: "#e2e8f0",
-                lineHeight: 1.8
-              }}
-            >
-              {answer}
-            </Typography>
-          </Box>
-        )}
-      </CardContent>
-    </Card>
+            {answer}
+          </Typography>
+        </Box>
+      )}
+    </DashboardCard>
   );
 }

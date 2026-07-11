@@ -29,7 +29,7 @@ import LightModeIcon from "@mui/icons-material/LightMode";
 
 import { useThemeMode } from "../context/ThemeContext";
 
-const drawerWidth = 280;
+const drawerWidth = 240;
 
 const menuItems = [
   {
@@ -77,7 +77,7 @@ function DashboardLayout({ children }) {
           borderBottom: "1px solid rgba(255,255,255,0.12)"
         }}
       >
-        <Toolbar sx={{ minHeight: 72 }}>
+        <Toolbar sx={{ minHeight: 60 }}>
           <Stack direction="row" spacing={1.3} alignItems="center" sx={{ flexGrow: 1 }}>
             <AutoAwesomeIcon sx={{ fontSize: 30 }} />
 
@@ -154,8 +154,8 @@ function DashboardLayout({ children }) {
           <Paper
             elevation={0}
             sx={{
-              p: 2,
-              mb: 2,
+              p: 1.25,
+              mb: 1.5,
               borderRadius: 3,
               background: isDark
                 ? "linear-gradient(135deg, #1e293b, #0f172a)"
@@ -167,7 +167,7 @@ function DashboardLayout({ children }) {
               Workspace
             </Typography>
 
-            <Typography variant="h6" sx={{ fontWeight: 900 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 900 }}>
               IT Operations
             </Typography>
           </Paper>
@@ -230,7 +230,7 @@ function DashboardLayout({ children }) {
         component="main"
         sx={{
           flexGrow: 1,
-          p: 4,
+          p: 2,
           mt: "72px",
           minHeight: "100vh"
         }}

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   Alert,
@@ -28,35 +28,35 @@ import { getPlatformHealth } from "../services/dashboardApi";
 const toneStyles = {
   primary: {
     accent: "#2563eb",
-    background: "linear-gradient(135deg, #eff6ff 0%, #ffffff 100%)",
+    background: "#eff6ff",
     iconBackground: "#dbeafe",
     chipBackground: "#dbeafe",
     chipColor: "#1d4ed8"
   },
   success: {
     accent: "#16a34a",
-    background: "linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%)",
+    background: "#f0fdf4",
     iconBackground: "#dcfce7",
     chipBackground: "#dcfce7",
     chipColor: "#166534"
   },
   warning: {
     accent: "#d97706",
-    background: "linear-gradient(135deg, #fffbeb 0%, #ffffff 100%)",
+    background: "#fffbeb",
     iconBackground: "#fef3c7",
     chipBackground: "#fef3c7",
     chipColor: "#92400e"
   },
   info: {
     accent: "#0891b2",
-    background: "linear-gradient(135deg, #ecfeff 0%, #ffffff 100%)",
+    background: "#ecfeff",
     iconBackground: "#cffafe",
     chipBackground: "#cffafe",
     chipColor: "#155e75"
   },
   default: {
     accent: "#64748b",
-    background: "linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)",
+    background: "#f8fafc",
     iconBackground: "#e2e8f0",
     chipBackground: "#e2e8f0",
     chipColor: "#334155"
@@ -80,29 +80,37 @@ function HealthMetricCard({ card }) {
     <Card
       sx={{
         height: "100%",
-        borderRadius: 4,
+        minHeight: 132,
+        borderRadius: 2.5,
         border: "1px solid #e5e7eb",
-        boxShadow: "0 12px 30px rgba(15,23,42,0.07)",
+        boxShadow: "0 6px 16px rgba(15,23,42,0.06)",
         background: tone.background,
-        transition: "transform 180ms ease, box-shadow 180ms ease",
+        transition: "transform 160ms ease, box-shadow 160ms ease",
         "&:hover": {
-          transform: "translateY(-3px)",
-          boxShadow: "0 18px 38px rgba(15,23,42,0.12)"
+          transform: "translateY(-2px)",
+          boxShadow: "0 10px 22px rgba(15,23,42,0.1)"
         }
       }}
     >
-      <CardContent sx={{ p: 2.5 }}>
+      <CardContent
+        sx={{
+          p: 1.75,
+          "&:last-child": {
+            pb: 1.75
+          }
+        }}
+      >
         <Stack
           direction="row"
           justifyContent="space-between"
-          alignItems="flex-start"
-          spacing={2}
+          alignItems="center"
+          spacing={1}
         >
           <Box
             sx={{
-              width: 46,
-              height: 46,
-              borderRadius: 3,
+              width: 36,
+              height: 36,
+              borderRadius: 2,
               display: "grid",
               placeItems: "center",
               backgroundColor: tone.iconBackground,
@@ -110,13 +118,15 @@ function HealthMetricCard({ card }) {
               flexShrink: 0
             }}
           >
-            <Icon />
+            <Icon fontSize="small" />
           </Box>
 
           <Chip
             label={card.status || "Unknown"}
             size="small"
             sx={{
+              height: 22,
+              fontSize: "0.7rem",
               fontWeight: 800,
               backgroundColor: tone.chipBackground,
               color: tone.chipColor
@@ -125,9 +135,9 @@ function HealthMetricCard({ card }) {
         </Stack>
 
         <Typography
-          variant="h4"
+          variant="h6"
           sx={{
-            mt: 2.5,
+            mt: 1.25,
             fontWeight: 900,
             color: "#0f172a",
             lineHeight: 1.1,
@@ -138,9 +148,9 @@ function HealthMetricCard({ card }) {
         </Typography>
 
         <Typography
-          variant="subtitle1"
+          variant="body2"
           sx={{
-            mt: 0.8,
+            mt: 0.35,
             fontWeight: 800,
             color: "#1e293b"
           }}
@@ -149,11 +159,12 @@ function HealthMetricCard({ card }) {
         </Typography>
 
         <Typography
-          variant="body2"
+          variant="caption"
           sx={{
-            mt: 1,
+            mt: 0.35,
+            display: "block",
             color: "#64748b",
-            lineHeight: 1.6
+            lineHeight: 1.35
           }}
         >
           {card.description}
@@ -174,6 +185,7 @@ export default function PlatformHealth() {
       setError("");
 
       const response = await getPlatformHealth();
+
       setHealthData(response?.data || null);
     } catch (requestError) {
       console.error("Platform health request failed:", requestError);
@@ -190,7 +202,10 @@ export default function PlatformHealth() {
     loadPlatformHealth();
   }, [loadPlatformHealth]);
 
-  const cards = useMemo(() => healthData?.cards || [], [healthData]);
+  const cards = useMemo(
+    () => healthData?.cards || [],
+    [healthData]
+  );
 
   const summary = healthData?.summary || {};
 
@@ -198,15 +213,16 @@ export default function PlatformHealth() {
     return (
       <Card
         sx={{
-          borderRadius: 4,
+          borderRadius: 3,
           border: "1px solid #e5e7eb",
-          boxShadow: "0 14px 35px rgba(15,23,42,0.08)"
+          boxShadow: "0 8px 20px rgba(15,23,42,0.06)"
         }}
       >
-        <CardContent sx={{ py: 7 }}>
-          <Stack alignItems="center" spacing={2}>
-            <CircularProgress size={34} />
-            <Typography color="text.secondary">
+        <CardContent sx={{ py: 3 }}>
+          <Stack alignItems="center" spacing={1}>
+            <CircularProgress size={28} />
+
+            <Typography variant="body2" color="text.secondary">
               Loading platform health...
             </Typography>
           </Stack>
@@ -221,15 +237,18 @@ export default function PlatformHealth() {
         direction={{ xs: "column", md: "row" }}
         justifyContent="space-between"
         alignItems={{ xs: "flex-start", md: "center" }}
-        spacing={2}
-        sx={{ mb: 2.5 }}
+        spacing={1}
+        sx={{ mb: 1.5 }}
       >
         <Box>
-          <Stack direction="row" spacing={1.2} alignItems="center">
-            <HealthAndSafetyOutlinedIcon sx={{ color: "#2563eb" }} />
+          <Stack direction="row" spacing={1} alignItems="center">
+            <HealthAndSafetyOutlinedIcon
+              fontSize="small"
+              sx={{ color: "#2563eb" }}
+            />
 
             <Typography
-              variant="h5"
+              variant="subtitle1"
               sx={{
                 fontWeight: 900,
                 color: "#0f172a"
@@ -240,33 +259,44 @@ export default function PlatformHealth() {
           </Stack>
 
           <Typography
-            variant="body2"
+            variant="caption"
             sx={{
-              mt: 0.7,
+              mt: 0.25,
+              display: "block",
               color: "#64748b"
             }}
           >
-            Live operational status across incidents, AI services, and database.
+            Live operational status across incidents, AI services and
+            database.
           </Typography>
         </Box>
 
-        <Stack direction="row" spacing={1.2} alignItems="center">
+        <Stack direction="row" spacing={1} alignItems="center">
           <Chip
             icon={<CheckCircleOutlineRoundedIcon />}
             label={summary.platform_health || "Unknown"}
+            size="small"
             sx={{
+              height: 26,
               fontWeight: 800,
               backgroundColor:
-                summary.platform_health === "Healthy" ? "#dcfce7" : "#fef3c7",
+                summary.platform_health === "Healthy"
+                  ? "#dcfce7"
+                  : "#fef3c7",
               color:
-                summary.platform_health === "Healthy" ? "#166534" : "#92400e"
+                summary.platform_health === "Healthy"
+                  ? "#166534"
+                  : "#92400e"
             }}
           />
 
           <Tooltip title="Refresh platform health">
             <IconButton
+              size="small"
               onClick={loadPlatformHealth}
               sx={{
+                width: 30,
+                height: 30,
                 border: "1px solid #e2e8f0",
                 backgroundColor: "#ffffff",
                 "&:hover": {
@@ -274,7 +304,7 @@ export default function PlatformHealth() {
                 }
               }}
             >
-              <RefreshRoundedIcon />
+              <RefreshRoundedIcon fontSize="small" />
             </IconButton>
           </Tooltip>
         </Stack>
@@ -284,29 +314,25 @@ export default function PlatformHealth() {
         <Alert
           severity="error"
           sx={{
-            mb: 2.5,
-            borderRadius: 3
+            mb: 1.5,
+            py: 0.25,
+            borderRadius: 2
           }}
         >
           {error}
         </Alert>
       )}
 
-      <Grid container spacing={2.5}>
+      <Grid container spacing={1.5}>
         {cards.map((card) => (
-          <Grid item xs={12} sm={6} lg={4} key={card.title}>
+          <Grid item xs={12} sm={6} md={4} xl={2} key={card.title}>
             <HealthMetricCard card={card} />
           </Grid>
         ))}
       </Grid>
 
       {cards.length === 0 && !error && (
-        <Alert
-          severity="info"
-          sx={{
-            borderRadius: 3
-          }}
-        >
+        <Alert severity="info" sx={{ borderRadius: 2 }}>
           No platform health metrics are currently available.
         </Alert>
       )}

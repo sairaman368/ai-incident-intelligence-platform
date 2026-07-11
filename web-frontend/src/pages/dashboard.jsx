@@ -4,7 +4,6 @@ import {
   Alert,
   Box,
   Divider,
-  Grid,
   Paper,
   Typography
 } from "@mui/material";
@@ -13,6 +12,7 @@ import PlatformHealth from "../components/PlatformHealth";
 import EnterpriseIncidentTimeline from "../components/enterpriseincidenttimeline";
 import SimilarIncidentIntelligence from "../components/similarincidentintelligence";
 import AICopilot from "../components/aicopilot";
+import IncidentRiskScore from "../components/incidentriskscore";
 import RunbookForm from "../components/RunbookForm/RunbookForm";
 import RunbookViewer from "../components/RunbookViewer/RunbookViewer";
 import ExecutiveRCACard from "../components/Dashboard/ExecutiveRCACard";
@@ -20,15 +20,16 @@ import DashboardHeader from "../components/Dashboard/DashboardHeader";
 import RecentAIActivity from "../components/Dashboard/RecentAIActivity";
 import AIEngineStatus from "../components/Dashboard/AIEngineStatus";
 
+import DashboardContainer from "../components/layout/dashboardcontainer";
+import DashboardSection from "../components/layout/dashboardsection";
+import {
+  DashboardColumn,
+  DashboardRow
+} from "../components/layout/dashboardgrid";
+import DashboardCard from "../components/common/dashboardcard";
+
 import { getSimilarIncidents } from "../services/similarApi";
 import { analyzeRCA } from "../services/rcaApi";
-
-const panelStyle = {
-  borderRadius: 4,
-  border: "1px solid #e5e7eb",
-  background: "#ffffff",
-  boxShadow: "0 14px 35px rgba(15,23,42,0.08)"
-};
 
 const readValue = (source, keys, fallback = "N/A") => {
   if (!source || typeof source !== "object") {
@@ -196,7 +197,7 @@ function Dashboard() {
         "The runbook was generated, but one or more dashboard services could not refresh."
       );
     } finally {
-      setRefreshKey((currentValue) => currentValue + 1);
+      setRefreshKey((value) => value + 1);
     }
   };
 
@@ -213,139 +214,184 @@ function Dashboard() {
   };
 
   return (
-    <Box>
+    <DashboardContainer compact>
       <DashboardHeader />
 
-      <Box sx={{ mt: 3 }}>
+      <DashboardSection compact>
         <PlatformHealth key={`platform-health-${refreshKey}`} />
-      </Box>
+      </DashboardSection>
 
       {dashboardError && (
         <Alert
           severity="warning"
           sx={{
-            mt: 3,
-            borderRadius: 3
+            mt: 1.5,
+            borderRadius: 2
           }}
         >
           {dashboardError}
         </Alert>
       )}
 
-      <Box sx={{ mt: 3 }}>
+      <DashboardSection
+        title="Incident Intelligence Workspace"
+        subtitle="Generate, analyse, assess and review incident intelligence."
+        compact
+      >
+        <DashboardRow spacing={2}>
+          <DashboardColumn xs={12} lg={4}>
+            <DashboardCard compact>
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  fontWeight: 900,
+                  color: "#0f172a",
+                  mb: 0.5
+                }}
+              >
+                Generate New Incident Intelligence
+              </Typography>
+
+              <Typography
+                variant="caption"
+                sx={{
+                  display: "block",
+                  color: "#64748b",
+                  mb: 1.25,
+                  lineHeight: 1.45
+                }}
+              >
+                Enter incident details and diagnostic commands to generate
+                the runbook, RCA and operational insights.
+              </Typography>
+
+              <Divider sx={{ mb: 1.25 }} />
+
+              <RunbookForm
+                onRunbookGenerated={handleRunbookGenerated}
+              />
+            </DashboardCard>
+          </DashboardColumn>
+
+          <DashboardColumn xs={12} lg={8}>
+            <DashboardCard
+              compact
+              scrollable
+              sx={{
+                minHeight: 360,
+                maxHeight: 520
+              }}
+            >
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  fontWeight: 900,
+                  color: "#0f172a",
+                  mb: 0.5
+                }}
+              >
+                Generated Runbook
+              </Typography>
+
+              <Typography
+                variant="caption"
+                sx={{
+                  display: "block",
+                  color: "#64748b",
+                  mb: 1.25,
+                  lineHeight: 1.45
+                }}
+              >
+                AI-generated diagnosis, recovery, validation, rollback and
+                preventive guidance.
+              </Typography>
+
+              <Divider sx={{ mb: 1.25 }} />
+
+              <RunbookViewer
+                runbook={runbook}
+                title={incidentTitle || "AI Runbook"}
+                onClear={clearDashboardOutput}
+              />
+            </DashboardCard>
+          </DashboardColumn>
+        </DashboardRow>
+      </DashboardSection>
+
+      <DashboardSection
+        title="Executive Intelligence"
+        subtitle="Root cause, AI guidance and risk posture for the active incident."
+        compact
+      >
+        <DashboardRow spacing={2}>
+          <DashboardColumn xs={12} xl={4}>
+            <ExecutiveRCACard
+              incidentTitle={incidentTitle}
+              executiveRCA={executiveRCA}
+              rcaLoading={rcaLoading}
+              rcaError={rcaError}
+            />
+          </DashboardColumn>
+
+          <DashboardColumn xs={12} xl={4}>
+            <AICopilot
+              incidentTitle={incidentTitle}
+              incidentDescription={incidentDescription}
+              runbook={runbook}
+            />
+          </DashboardColumn>
+
+          <DashboardColumn xs={12} xl={4}>
+            <IncidentRiskScore
+              incidentTitle={incidentTitle}
+              incidentDescription={incidentDescription}
+              runbook={runbook}
+              executiveRCA={
+                executiveRCA
+                  ? JSON.stringify(executiveRCA, null, 2)
+                  : ""
+              }
+            />
+          </DashboardColumn>
+        </DashboardRow>
+      </DashboardSection>
+
+      <DashboardSection
+        title="Operational Intelligence"
+        subtitle="Historical similarity, engine status and recent AI activity."
+        compact
+      >
+        <DashboardRow spacing={2}>
+          <DashboardColumn xs={12} xl={6}>
+            <SimilarIncidentIntelligence
+              incidentTitle={incidentTitle}
+              loading={similarLoading}
+              incidents={similarIncidents}
+            />
+          </DashboardColumn>
+
+          <DashboardColumn xs={12} md={6} xl={3}>
+            <AIEngineStatus />
+          </DashboardColumn>
+
+          <DashboardColumn xs={12} md={6} xl={3}>
+            <RecentAIActivity
+              key={`activity-${refreshKey}`}
+            />
+          </DashboardColumn>
+        </DashboardRow>
+      </DashboardSection>
+
+      <DashboardSection
+        title="Enterprise Incident Timeline"
+        subtitle="Lifecycle events and AI-generated incident milestones."
+        compact
+      >
         <EnterpriseIncidentTimeline
           key={`incident-timeline-${refreshKey}`}
         />
-      </Box>
-
-      <Grid container spacing={3} sx={{ mt: 0 }}>
-        <Grid item xs={12} lg={5}>
-          <Paper sx={{ ...panelStyle, p: 3 }}>
-            <Typography
-              variant="h6"
-              sx={{
-                fontWeight: 900,
-                color: "#0f172a",
-                mb: 1
-              }}
-            >
-              Generate New Incident Intelligence
-            </Typography>
-
-            <Typography
-              variant="body2"
-              sx={{
-                color: "#64748b",
-                mb: 2
-              }}
-            >
-              Enter the incident details and diagnostic commands to
-              generate an AI runbook, executive RCA, and operational
-              insights.
-            </Typography>
-
-            <Divider sx={{ mb: 2 }} />
-
-            <RunbookForm
-              onRunbookGenerated={handleRunbookGenerated}
-            />
-          </Paper>
-
-          <ExecutiveRCACard
-            incidentTitle={incidentTitle}
-            executiveRCA={executiveRCA}
-            rcaLoading={rcaLoading}
-            rcaError={rcaError}
-          />
-        </Grid>
-
-        <Grid item xs={12} lg={7}>
-          <Paper
-            sx={{
-              ...panelStyle,
-              p: 3,
-              minHeight: 460
-            }}
-          >
-            <Typography
-              variant="h6"
-              sx={{
-                fontWeight: 900,
-                color: "#0f172a",
-                mb: 1
-              }}
-            >
-              Generated Runbook
-            </Typography>
-
-            <Typography
-              variant="body2"
-              sx={{
-                color: "#64748b",
-                mb: 2
-              }}
-            >
-              AI-generated diagnostic, recovery, validation, rollback,
-              and preventive actions appear here.
-            </Typography>
-
-            <Divider sx={{ mb: 2 }} />
-
-            <RunbookViewer
-              runbook={runbook}
-              title={incidentTitle || "AI Runbook"}
-              onClear={clearDashboardOutput}
-            />
-          </Paper>
-
-          <Grid container spacing={3} sx={{ mt: 0 }}>
-            <Grid item xs={12} md={6}>
-              <AIEngineStatus />
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <RecentAIActivity
-                key={`activity-${refreshKey}`}
-              />
-            </Grid>
-          </Grid>
-        </Grid>
-      </Grid>
-<Box sx={{ mt: 3 }}>
-  <AICopilot
-    incidentTitle={incidentTitle}
-    incidentDescription={incidentDescription}
-    runbook={runbook}
-  />
-</Box>
-      <Box sx={{ mt: 3 }}>
-        <SimilarIncidentIntelligence
-          incidentTitle={incidentTitle}
-          loading={similarLoading}
-          incidents={similarIncidents}
-        />
-      </Box>
-    </Box>
+      </DashboardSection>
+    </DashboardContainer>
   );
 }
 

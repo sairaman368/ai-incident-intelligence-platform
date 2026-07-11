@@ -1,207 +1,247 @@
 import {
   Box,
-  Button,
   Chip,
-  Divider,
+  IconButton,
   Paper,
   Stack,
+  Tooltip,
   Typography
 } from "@mui/material";
 
-import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
-import AnalyticsIcon from "@mui/icons-material/Analytics";
-import HistoryIcon from "@mui/icons-material/History";
-import HealthAndSafetyIcon from "@mui/icons-material/HealthAndSafety";
-import SmartToyIcon from "@mui/icons-material/SmartToy";
-import StorageIcon from "@mui/icons-material/Storage";
-import MemoryIcon from "@mui/icons-material/Memory";
+import AnalyticsOutlinedIcon from "@mui/icons-material/AnalyticsOutlined";
+import HistoryOutlinedIcon from "@mui/icons-material/HistoryOutlined";
+import HealthAndSafetyOutlinedIcon from "@mui/icons-material/HealthAndSafetyOutlined";
+import SmartToyOutlinedIcon from "@mui/icons-material/SmartToyOutlined";
+import StorageOutlinedIcon from "@mui/icons-material/StorageOutlined";
+import MemoryOutlinedIcon from "@mui/icons-material/MemoryOutlined";
+import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
+import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
 
 import { Link } from "react-router-dom";
 
 function DashboardHeader() {
+  const currentTime = new Date().toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+
   const statusItems = [
     {
-      label: "Platform Health",
-      value: "Healthy",
-      icon: <HealthAndSafetyIcon fontSize="small" />,
-      color: "#22c55e"
+      label: "Healthy",
+      icon: <HealthAndSafetyOutlinedIcon fontSize="small" />,
+      background: "#dcfce7",
+      color: "#166534"
     },
     {
-      label: "AI Engine",
-      value: "Online",
-      icon: <SmartToyIcon fontSize="small" />,
-      color: "#38bdf8"
+      label: "AI Online",
+      icon: <SmartToyOutlinedIcon fontSize="small" />,
+      background: "#dbeafe",
+      color: "#1d4ed8"
     },
     {
-      label: "Database",
-      value: "Connected",
-      icon: <StorageIcon fontSize="small" />,
-      color: "#a78bfa"
+      label: "SQLite",
+      icon: <StorageOutlinedIcon fontSize="small" />,
+      background: "#ede9fe",
+      color: "#6d28d9"
     },
     {
-      label: "Model",
-      value: "Qwen 2.5:3B",
-      icon: <MemoryIcon fontSize="small" />,
-      color: "#facc15"
+      label: "Qwen 2.5:3B",
+      icon: <MemoryOutlinedIcon fontSize="small" />,
+      background: "#fef3c7",
+      color: "#92400e"
+    },
+    {
+      label: `Updated ${currentTime}`,
+      icon: <AccessTimeOutlinedIcon fontSize="small" />,
+      background: "#e2e8f0",
+      color: "#334155"
     }
   ];
 
   return (
     <Paper
+      elevation={0}
       sx={{
-        borderRadius: 5,
-        overflow: "hidden",
-        mb: 3,
-        background: "linear-gradient(135deg, #020617 0%, #1e3a8a 45%, #2563eb 100%)",
-        color: "#ffffff",
-        boxShadow: "0 22px 55px rgba(15,23,42,0.22)",
-        border: "1px solid rgba(147,197,253,0.35)"
+        borderRadius: 3,
+        border: "1px solid #dbeafe",
+        background:
+          "linear-gradient(135deg, #eff6ff 0%, #ffffff 48%, #f8fafc 100%)",
+        boxShadow: "0 8px 24px rgba(15,23,42,0.07)",
+        overflow: "hidden"
       }}
     >
-      <Box sx={{ p: { xs: 3, md: 4 } }}>
+      <Box
+        sx={{
+          px: {
+            xs: 1.5,
+            sm: 2
+          },
+          py: {
+            xs: 1.5,
+            sm: 1.75
+          }
+        }}
+      >
         <Stack
-          direction={{ xs: "column", md: "row" }}
+          direction={{
+            xs: "column",
+            md: "row"
+          }}
           justifyContent="space-between"
-          alignItems={{ xs: "flex-start", md: "center" }}
-          spacing={3}
+          alignItems={{
+            xs: "flex-start",
+            md: "center"
+          }}
+          spacing={1.5}
         >
-          <Box>
-            <Stack direction="row" spacing={1.2} alignItems="center">
-              <AutoAwesomeIcon sx={{ fontSize: 34 }} />
+          <Stack
+            direction="row"
+            spacing={1}
+            alignItems="center"
+          >
+            <Box
+              sx={{
+                width: 36,
+                height: 36,
+                borderRadius: 2,
+                display: "grid",
+                placeItems: "center",
+                color: "#ffffff",
+                background:
+                  "linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%)",
+                boxShadow: "0 6px 16px rgba(37,99,235,0.22)",
+                flexShrink: 0
+              }}
+            >
+              <AutoAwesomeOutlinedIcon fontSize="small" />
+            </Box>
 
-              <Typography
-                variant="h3"
-                sx={{
-                  fontWeight: 950,
-                  lineHeight: 1.05,
-                  letterSpacing: "-0.04em"
+            <Box>
+              <Stack
+                direction={{
+                  xs: "column",
+                  sm: "row"
+                }}
+                spacing={0.75}
+                alignItems={{
+                  xs: "flex-start",
+                  sm: "center"
                 }}
               >
-                AI Incident Intelligence Platform
-              </Typography>
-            </Stack>
-
-            <Typography
-              sx={{
-                mt: 1.3,
-                color: "#dbeafe",
-                maxWidth: 760,
-                fontSize: 17,
-                lineHeight: 1.7
-              }}
-            >
-              Enterprise AIOps workspace for runbook generation, executive RCA,
-              similar incident intelligence, analytics, and operational insights.
-            </Typography>
-          </Box>
-
-          <Chip
-            label="Enterprise Portfolio Build"
-            variant="outlined"
-            sx={{
-              color: "#ffffff",
-              borderColor: "#93c5fd",
-              fontWeight: 800,
-              fontSize: 14,
-              px: 1,
-              height: 36,
-              background: "rgba(255,255,255,0.08)"
-            }}
-          />
-        </Stack>
-
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={1.5}
-          sx={{ mt: 3 }}
-        >
-          <Button
-            component={Link}
-            to="/analytics"
-            variant="contained"
-            startIcon={<AnalyticsIcon />}
-            sx={{
-              background: "#ffffff",
-              color: "#1d4ed8",
-              fontWeight: 900,
-              borderRadius: 3,
-              px: 2.5,
-              "&:hover": {
-                background: "#e0ecff"
-              }
-            }}
-          >
-            View Analytics
-          </Button>
-
-          <Button
-            component={Link}
-            to="/history"
-            variant="outlined"
-            startIcon={<HistoryIcon />}
-            sx={{
-              color: "#ffffff",
-              borderColor: "#93c5fd",
-              fontWeight: 900,
-              borderRadius: 3,
-              px: 2.5,
-              "&:hover": {
-                borderColor: "#ffffff",
-                background: "rgba(255,255,255,0.08)"
-              }
-            }}
-          >
-            Incident History
-          </Button>
-        </Stack>
-      </Box>
-
-      <Divider sx={{ borderColor: "rgba(255,255,255,0.14)" }} />
-
-      <Box sx={{ px: { xs: 3, md: 4 }, py: 2 }}>
-        <Stack
-          direction={{ xs: "column", md: "row" }}
-          spacing={2}
-          justifyContent="space-between"
-        >
-          {statusItems.map((item) => (
-            <Box
-              key={item.label}
-              sx={{
-                flex: 1,
-                p: 1.7,
-                borderRadius: 3,
-                background: "rgba(15,23,42,0.32)",
-                border: "1px solid rgba(255,255,255,0.12)"
-              }}
-            >
-              <Stack direction="row" spacing={1.2} alignItems="center">
-                <Box
+                <Typography
+                  variant="h6"
                   sx={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: 2,
-                    background: `${item.color}22`,
-                    color: item.color,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center"
+                    fontWeight: 950,
+                    color: "#0f172a",
+                    lineHeight: 1.1,
+                    letterSpacing: "-0.02em"
                   }}
                 >
-                  {item.icon}
-                </Box>
+                  Enterprise Operations Center
+                </Typography>
 
-                <Box>
-                  <Typography sx={{ color: "#bfdbfe", fontSize: 12, fontWeight: 800 }}>
-                    {item.label}
-                  </Typography>
-
-                  <Typography sx={{ color: "#ffffff", fontWeight: 900 }}>
-                    {item.value}
-                  </Typography>
-                </Box>
+                <Chip
+                  label="Enterprise Edition"
+                  size="small"
+                  variant="outlined"
+                  sx={{
+                    height: 23,
+                    fontSize: "0.68rem",
+                    fontWeight: 800,
+                    color: "#1d4ed8",
+                    borderColor: "#93c5fd",
+                    backgroundColor: "#eff6ff"
+                  }}
+                />
               </Stack>
+
+              <Typography
+                variant="caption"
+                sx={{
+                  mt: 0.25,
+                  display: "block",
+                  color: "#64748b",
+                  lineHeight: 1.35
+                }}
+              >
+                Live incident intelligence, AI analysis, risk and operational
+                status.
+              </Typography>
             </Box>
+          </Stack>
+
+          <Stack
+            direction="row"
+            spacing={0.75}
+            alignItems="center"
+          >
+            <Tooltip title="View analytics">
+              <IconButton
+                component={Link}
+                to="/analytics"
+                size="small"
+                sx={{
+                  width: 34,
+                  height: 34,
+                  border: "1px solid #dbeafe",
+                  backgroundColor: "#ffffff",
+                  color: "#1d4ed8",
+                  "&:hover": {
+                    backgroundColor: "#eff6ff"
+                  }
+                }}
+              >
+                <AnalyticsOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+
+            <Tooltip title="View incident history">
+              <IconButton
+                component={Link}
+                to="/history"
+                size="small"
+                sx={{
+                  width: 34,
+                  height: 34,
+                  border: "1px solid #dbeafe",
+                  backgroundColor: "#ffffff",
+                  color: "#1d4ed8",
+                  "&:hover": {
+                    backgroundColor: "#eff6ff"
+                  }
+                }}
+              >
+                <HistoryOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Stack>
+        </Stack>
+
+        <Stack
+          direction="row"
+          flexWrap="wrap"
+          gap={0.75}
+          sx={{
+            mt: 1.25
+          }}
+        >
+          {statusItems.map((item) => (
+            <Chip
+              key={item.label}
+              label={item.label}
+              icon={item.icon}
+              size="small"
+              sx={{
+                height: 25,
+                fontSize: "0.7rem",
+                fontWeight: 800,
+                backgroundColor: item.background,
+                color: item.color,
+                "& .MuiChip-icon": {
+                  color: "inherit"
+                }
+              }}
+            />
           ))}
         </Stack>
       </Box>
