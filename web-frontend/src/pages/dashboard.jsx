@@ -83,6 +83,7 @@ const normalizeRCA = (result) => {
 
 function Dashboard() {
   const [runbook, setRunbook] = useState("");
+  const [incidentId, setIncidentId] = useState(null);
   const [incidentTitle, setIncidentTitle] = useState("");
   const [incidentDescription, setIncidentDescription] = useState("");
   const [similarIncidents, setSimilarIncidents] = useState([]);
@@ -131,16 +132,18 @@ function Dashboard() {
   };
 
   const loadExecutiveRCA = async ({
-    title,
-    commands,
-    generatedRunbook
-  }) => {
+  incidentId,
+  title,
+  commands,
+  generatedRunbook
+}) => {
     try {
       setRcaLoading(true);
       setRcaError("");
       setExecutiveRCA(null);
 
       const result = await analyzeRCA({
+        incident_id: incidentId,
         incident_title: title,
         commands,
         runbook: generatedRunbook
@@ -168,6 +171,8 @@ function Dashboard() {
 
   const handleRunbookGenerated = async (payload) => {
     const generatedRunbook = payload?.runbook || "";
+    const generatedIncidentId =
+      payload?.incidentId || payload?.incident_id;
 
     const title =
       payload?.incidentTitle ||
@@ -177,6 +182,7 @@ function Dashboard() {
     const commands = payload?.commands || "";
 
     setDashboardError("");
+    setIncidentId(generatedIncidentId);
     setRunbook(generatedRunbook);
     setIncidentTitle(title);
     setIncidentDescription(commands);
@@ -185,6 +191,7 @@ function Dashboard() {
       await Promise.all([
         loadSimilarIncidents(title),
         loadExecutiveRCA({
+          incidentId: generatedIncidentId,
           title,
           commands,
           generatedRunbook
@@ -202,6 +209,7 @@ function Dashboard() {
   };
 
   const clearDashboardOutput = () => {
+    setIncidentId(null);
     setRunbook("");
     setIncidentTitle("");
     setIncidentDescription("");

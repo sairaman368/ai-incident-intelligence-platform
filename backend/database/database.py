@@ -1109,7 +1109,89 @@ def get_incident_activity(
         """,
         (incident_id,),
     )
+def add_timeline_event(
+    incident_id: int,
+    stage: str,
+    status: str,
+    summary: str,
+    details: str = "",
+    actor: str = "platform",
+    source: str = "workflow",
+    confidence_score: Optional[int] = None,
+    ai_generated: bool = False,
+    notes: str = "",
+    metadata: Optional[dict[str, Any]] = None,
+) -> int:
+    with database_transaction() as conn:
+        cursor = conn.cursor()
 
+        cursor.execute(
+            """
+            SELECT COALESCE(MAX(sort_order), 0) + 1
+            FROM incident_timeline
+            WHERE incident_id = ?
+            """,
+            (incident_id,),
+        )
+
+        next_sort_order = int(cursor.fetchone()[0])
+
+        cursor.execute(
+            """
+            INSERT INTO incident_timeline (
+                incident_id,
+                stage,
+                status,
+                summary,
+                details,
+                completed_at,
+                actor,
+                source,
+                confidence_score,
+                ai_generated,
+                notes,
+                metadata_json,
+                sort_order
+            )
+            VALUES (
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                CASE
+                    WHEN ? = 'completed'
+                    THEN CURRENT_TIMESTAMP
+                    ELSE NULL
+                END,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?
+            )
+            """,
+            (
+                incident_id,
+                stage,
+                status,
+                summary,
+                details,
+                status,
+                actor,
+                source,
+                confidence_score,
+                1 if ai_generated else 0,
+                notes,
+                serialize_metadata(metadata),
+                next_sort_order,
+            ),
+        )
+
+        return int(cursor.lastrowid)
+    
     rows = cursor.fetchall()
     conn.close()
 

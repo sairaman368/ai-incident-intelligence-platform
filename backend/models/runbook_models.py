@@ -1,26 +1,20 @@
-from typing import List
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class RunbookRequest(BaseModel):
-    incident_title: str
-    commands: str
+    incident_title: str = Field(
+        ...,
+        min_length=3,
+        max_length=250,
+    )
+    commands: str = Field(
+        ...,
+        min_length=1,
+    )
 
 
 class RunbookResponse(BaseModel):
     success: bool
     message: str
+    incident_id: int
     runbook: str
-
-
-class RunbookHistory(BaseModel):
-    id: int
-    incident_title: str
-    commands: str
-    runbook: str
-    created_at: str
-
-
-class RunbookHistoryResponse(BaseModel):
-    success: bool
-    data: List[RunbookHistory]

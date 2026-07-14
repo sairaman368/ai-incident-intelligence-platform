@@ -38,7 +38,10 @@ function RunbookForm({ onRunbookGenerated }) {
     const trimmedCommands = commands.trim();
 
     if (!trimmedTitle || !trimmedCommands) {
-      showSnackbar("Please enter the incident title and commands.", "warning");
+      showSnackbar(
+        "Please enter the incident title and commands.",
+        "warning"
+      );
       return;
     }
 
@@ -50,18 +53,39 @@ function RunbookForm({ onRunbookGenerated }) {
         commands: trimmedCommands
       });
 
+      const incidentId = response?.data?.incident_id;
+      const generatedRunbook = response?.data?.runbook || "";
+
+      if (!incidentId) {
+        throw new Error(
+          "The backend did not return an incident ID."
+        );
+      }
+
+      if (!generatedRunbook) {
+        throw new Error(
+          "The backend did not return a generated runbook."
+        );
+      }
+
       onRunbookGenerated({
-        runbook: response.data.runbook,
+        incidentId,
+        incident_id: incidentId,
+        runbook: generatedRunbook,
         incidentTitle: trimmedTitle,
+        incident_title: trimmedTitle,
         commands: trimmedCommands
       });
 
-      showSnackbar("Runbook generated successfully.");
+      showSnackbar(
+        `Runbook generated successfully. Incident ID: ${incidentId}`
+      );
     } catch (error) {
       console.error("Runbook generation failed:", error);
 
       const message =
         error?.response?.data?.detail ||
+        error?.message ||
         "Failed to generate runbook. Confirm the backend and Ollama are running.";
 
       showSnackbar(message, "error");
@@ -88,7 +112,9 @@ function RunbookForm({ onRunbookGenerated }) {
           <TextField
             label="Incident Title"
             value={incidentTitle}
-            onChange={(event) => setIncidentTitle(event.target.value)}
+            onChange={(event) =>
+              setIncidentTitle(event.target.value)
+            }
             fullWidth
             size="small"
             disabled={loading}
@@ -101,7 +127,9 @@ function RunbookForm({ onRunbookGenerated }) {
             minRows={4}
             maxRows={7}
             value={commands}
-            onChange={(event) => setCommands(event.target.value)}
+            onChange={(event) =>
+              setCommands(event.target.value)
+            }
             fullWidth
             size="small"
             disabled={loading}
@@ -124,7 +152,10 @@ function RunbookForm({ onRunbookGenerated }) {
             onClick={generateRunbook}
             startIcon={
               loading ? (
-                <CircularProgress color="inherit" size={17} />
+                <CircularProgress
+                  color="inherit"
+                  size={17}
+                />
               ) : (
                 <AutoAwesomeRoundedIcon />
               )
@@ -136,7 +167,9 @@ function RunbookForm({ onRunbookGenerated }) {
               textTransform: "none"
             }}
           >
-            {loading ? "Generating..." : "Generate Runbook"}
+            {loading
+              ? "Generating..."
+              : "Generate Runbook"}
           </Button>
         </Stack>
       </Box>

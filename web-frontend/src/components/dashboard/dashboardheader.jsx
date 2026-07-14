@@ -63,11 +63,24 @@ function DashboardHeader() {
       elevation={0}
       sx={{
         borderRadius: 3,
-        border: "1px solid #dbeafe",
+        border: "1px solid #bfdbfe",
         background:
-          "linear-gradient(135deg, #eff6ff 0%, #ffffff 48%, #f8fafc 100%)",
-        boxShadow: "0 8px 24px rgba(15,23,42,0.07)",
-        overflow: "hidden"
+         "linear-gradient(135deg, #eef6ff 0%, #dbeafe 45%, #f8fbff 100%)",
+        boxShadow: "0 12px 28px rgba(37,99,235,0.12)",
+        overflow: "hidden",
+        position: "relative",
+        "&::before": {
+        content: '""',
+        position: "absolute",
+        top: 0,
+        right: 0,
+        width: 220,
+        height: "100%",
+        background:
+          "linear-gradient(90deg, transparent, rgba(37,99,235,0.08))",
+        pointerEvents: "none",
+},
+        
       }}
     >
       <Box
@@ -137,11 +150,11 @@ function DashboardHeader() {
                     letterSpacing: "-0.02em"
                   }}
                 >
-                  Enterprise Operations Center
+                  Enterprise Incident Intelligence Platform
                 </Typography>
 
                 <Chip
-                  label="Enterprise Edition"
+                  label="Local LLM"
                   size="small"
                   variant="outlined"
                   sx={{
@@ -160,7 +173,8 @@ function DashboardHeader() {
                 sx={{
                   mt: 0.25,
                   display: "block",
-                  color: "#64748b",
+                  color: "#334155",
+                  fontWeight: 500,
                   lineHeight: 1.35
                 }}
               >
